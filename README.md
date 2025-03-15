@@ -11,6 +11,8 @@ Clone the repository
 git clone https://github.com/BlastBringer/rantlog.git
 cd rantlog
 
+CHANGE YOUR DIRECTORY TO SAVE IN THE CODE!
+
 Build the project
 
 cargo build --release
