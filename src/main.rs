@@ -2,6 +2,8 @@ use std::fs::{OpenOptions, create_dir_all};
 use std::io::{self, Write};
 use chrono::{Local, Datelike, Timelike};
 use colored::*;
+use crossterm::terminal::{self, Clear, ClearType};
+
 
 // Change this to your preferred directory
 const LOG_DIR: &str = "/home/rahul/Documents/rant_logs";  
@@ -39,23 +41,42 @@ fn log_to_file(rant: &str) -> std::io::Result<String> {
         .open(&file_path)?;
 
     // Write log entry
-    let log_entry = format!("[{}] {}\n", timestamp, rant);
+    let log_entry = format!("[{}]\n{}\n\n", timestamp, rant);
     file.write_all(log_entry.as_bytes())?;
 
     Ok(file_path)
 }
 
+fn print_welcome_message() {
+    let width = terminal::size().map(|(w, _)| w as usize).unwrap_or(80);
+    let message = "🔥 Welcome to the Rant Logger! 🔥".bold().red().on_black();
+    let padding = (width.saturating_sub(32)) / 2; // Adjust based on message length
+
+    println!("{}", " ".repeat(width).on_black()); // Top black bar
+    println!("{}{}", " ".repeat(padding), message);
+    println!("{}", " ".repeat(width).on_black()); // Bottom black bar
+}
+
+fn clear_screen() {
+    print!("\x1B[2J\x1B[1;1H"); // ANSI escape codes for clearing screen
+    io::stdout().flush().unwrap();
+}
+
 fn main() {
-    println!("{}", "                 🔥 Welcome to the Rant Logger! 🔥                ".bold().red().on_black());
+    clear_screen();
+    print_welcome_message();
 
     loop {
         let time = timestamp();
-        println!("{}", format!("Current time: {}", time).yellow().bold());
-        println!("{}", "Type your rant. Type 'END' to finish, or 'EXIT' to quit:".blue().bold());
+        println!("\n{}", format!("⏳ Current time: {}", time).yellow().bold());
+        println!("{}", "📝 Type your rant. Type 'END' to finish, or 'EXIT' to quit:".blue().bold());
 
         let mut paragraph = String::new();
 
         loop {
+            print!(">> "); // Input indicator
+            io::stdout().flush().unwrap(); // Ensure ">>" prints before input
+            
             let mut line = String::new();
             io::stdin().read_line(&mut line).expect("Failed to read line");
             let line = line.trim();
@@ -63,7 +84,7 @@ fn main() {
             if line.eq_ignore_ascii_case("END") {
                 break;
             } else if line.eq_ignore_ascii_case("EXIT") {
-                println!("{}", " Exiting... Your rants are saved! ".green().bold());
+                println!("\n{}", "👋 Exiting... Your rants are safely saved! 🎤🔥".green().bold());
                 return;
             } else {
                 paragraph.push_str(line);
